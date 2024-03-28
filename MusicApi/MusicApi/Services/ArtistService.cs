@@ -5,8 +5,8 @@ namespace MusicApi.Services;
 
 public interface IArtistService
 {
-    public Task<ServiceResult<string>> CreateAsync(string name);
-    public Task<ServiceResult<string>> UpdateAsync(int id, string name);
+    public Task<ServiceResult<CountResult>> CreateAsync(string name);
+    public Task<ServiceResult<CountResult>> UpdateAsync(int id, string name);
 }
 
 public class ArtistService : BaseService<Artist>, IArtistService
@@ -15,13 +15,13 @@ public class ArtistService : BaseService<Artist>, IArtistService
     {
     }
 
-    public async Task<ServiceResult<string>> CreateAsync(string name)
+    public async Task<ServiceResult<CountResult>> CreateAsync(string name)
     {
         var artist = new Artist { Name = name };
         return await InsertAsync(artist);
     }
 
-    public async Task<ServiceResult<string>> UpdateAsync(int id, string name)
+    public async Task<ServiceResult<CountResult>> UpdateAsync(int id, string name)
     {
         return await UpdateAsync(id, artist =>
         {

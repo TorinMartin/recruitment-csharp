@@ -5,14 +5,15 @@ using MusicApi.Model;
 namespace MusicApi.Services;
 
 public record ServiceResult<TResult>(bool HasError = false, string? Error = null, TResult? Result = default);
+public record CountResult(string Action, long Processed);
 
 public interface IBaseService<T>
 {
     public Task<ServiceResult<List<T>>> GetAsync();
     public Task<ServiceResult<T>> GetAsync(int id);
-    public Task<ServiceResult<string>> InsertAsync(T entity);
-    public Task<ServiceResult<string>> DeleteAsync(int id);
-    public Task<ServiceResult<string>> UpdateAsync(int id, Action<T> del);
+    public Task<ServiceResult<CountResult>> InsertAsync(T entity);
+    public Task<ServiceResult<CountResult>> DeleteAsync(int id);
+    public Task<ServiceResult<CountResult>> UpdateAsync(int id, Action<T> del);
 }
 
 /// <summary>
@@ -34,17 +35,17 @@ public abstract class BaseService<T> : IBaseService<T> where T : BaseEntity
         return await ExecuteSafelyAsync(async () => await GetByIdAsync(id) ?? throw new Exception("Query yielded no results"));
     }
     
-    public async Task<ServiceResult<string>> InsertAsync(T entity)
+    public async Task<ServiceResult<CountResult>> InsertAsync(T entity)
     {
         return await ExecuteSafelyAsync(async () =>
         {
             await _dbContext.Set<T>().AddAsync(entity);
-            var updated = await _dbContext.SaveChangesAsync();
-            return $"Inserted: {updated}";
+            var inserted = await _dbContext.SaveChangesAsync();
+            return new CountResult("Inserted", inserted);
         });
     }
     
-    public async Task<ServiceResult<string>> DeleteAsync(int id)
+    public async Task<ServiceResult<CountResult>> DeleteAsync(int id)
     {
         return await ExecuteSafelyAsync(async () =>
         {
@@ -56,8 +57,8 @@ public abstract class BaseService<T> : IBaseService<T> where T : BaseEntity
                 _dbContext.Set<T>().Remove(entity);
                 deleted = await _dbContext.SaveChangesAsync();
             }
-            
-            return $"Deleted: {deleted}";
+
+            return new CountResult("Deleted", deleted);
         });
     }
 
@@ -67,7 +68,7 @@ public abstract class BaseService<T> : IBaseService<T> where T : BaseEntity
     /// <param name="id">Entity ID to update</param>
     /// <param name="del">Delegate to update properties of Entity</param>
     /// <returns></returns>
-    public async Task<ServiceResult<string>> UpdateAsync(int id, Action<T> del)
+    public async Task<ServiceResult<CountResult>> UpdateAsync(int id, Action<T> del)
     {
 
         return await ExecuteSafelyAsync(async () =>
@@ -81,7 +82,7 @@ public abstract class BaseService<T> : IBaseService<T> where T : BaseEntity
                 updated = await _dbContext.SaveChangesAsync();
             }
 
-            return $"Updated: {updated}";
+            return new CountResult("Updated", updated);
         });
     }
     
