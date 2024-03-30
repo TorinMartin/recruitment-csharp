@@ -3,6 +3,9 @@ using MusicApi.Services;
 
 namespace MusicApi.Controllers;
 
+public record ArtistCreationRequest(string Name);
+public record ArtistUpdateRequest(int Id, string Name);
+
 [ApiController]
 [Route("v1/artists")]
 public class ArtistController : BaseController
@@ -29,9 +32,9 @@ public class ArtistController : BaseController
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddArtistAsync(string name)
+    public async Task<IActionResult> AddArtistAsync(ArtistCreationRequest request)
     {
-        var result = await _artistService.CreateAsync(name);
+        var result = await _artistService.CreateAsync(request);
         return await HandleServiceResult(result);
     }
 
@@ -43,9 +46,9 @@ public class ArtistController : BaseController
     }
 
     [HttpPut("id")]
-    public async Task<IActionResult> UpdateArtistAsync(int id, string name)
+    public async Task<IActionResult> UpdateArtistAsync(ArtistUpdateRequest request)
     {
-        var result = await _artistService.UpdateAsync(id, name);
+        var result = await _artistService.UpdateAsync(request);
         return await HandleServiceResult(result);
     }
 }

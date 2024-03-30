@@ -1,12 +1,13 @@
-﻿using MusicApi.Data;
+﻿using MusicApi.Controllers;
+using MusicApi.Data;
 using MusicApi.Model;
 
 namespace MusicApi.Services;
 
 public interface IArtistService
 {
-    public Task<ServiceResult<CountResult>> CreateAsync(string name);
-    public Task<ServiceResult<CountResult>> UpdateAsync(int id, string name);
+    public Task<ServiceResult<CountResult>> CreateAsync(ArtistCreationRequest request);
+    public Task<ServiceResult<CountResult>> UpdateAsync(ArtistUpdateRequest request);
 }
 
 public class ArtistService : BaseService<Artist>, IArtistService
@@ -15,19 +16,19 @@ public class ArtistService : BaseService<Artist>, IArtistService
     {
     }
 
-    public async Task<ServiceResult<CountResult>> CreateAsync(string name)
+    public async Task<ServiceResult<CountResult>> CreateAsync(ArtistCreationRequest request)
     {
-        if (string.IsNullOrEmpty(name)) return await HandleServiceError<CountResult>("Missing required field: name");
+        if (string.IsNullOrEmpty(request.Name)) return await HandleServiceError<CountResult>("Missing required field: name");
         
-        var artist = new Artist { Name = name };
+        var artist = new Artist { Name = request.Name };
         return await InsertAsync(artist);
     }
 
-    public async Task<ServiceResult<CountResult>> UpdateAsync(int id, string name)
+    public async Task<ServiceResult<CountResult>> UpdateAsync(ArtistUpdateRequest request)
     {
-        return await UpdateAsync(id, artist =>
+        return await UpdateAsync(request.Id, artist =>
         {
-            artist.Name = name;
+            artist.Name = request.Name;
         });
     }
 }

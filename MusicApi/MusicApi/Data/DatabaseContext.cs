@@ -18,6 +18,6 @@ public class DatabaseContext : DbContext
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite(_configuration.GetValue<string>("DbConnection"));
+        optionsBuilder.UseSqlServer(_configuration.GetValue<string>("DbConnection"));
     }
 }
