@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using MusicApi.Data;
 using MusicApi.Model;
 
@@ -9,8 +10,8 @@ public record CountResult(string Action, long Processed);
 
 public interface IBaseService<T>
 {
-    public Task<ServiceResult<List<T>>> GetAsync();
-    public Task<ServiceResult<T>> GetAsync(int id);
+    public Task<ServiceResult<List<T>>> GetAsync(params Expression<Func<T, object>>[] includes);
+    public Task<ServiceResult<T>> GetAsync(int id, params Expression<Func<T, object>>[] includes);
     public Task<ServiceResult<CountResult>> InsertAsync(T entity);
     public Task<ServiceResult<CountResult>> DeleteAsync(int id);
     public Task<ServiceResult<CountResult>> UpdateAsync(int id, Action<T> del);
@@ -28,12 +29,20 @@ public abstract class BaseService<T> : IBaseService<T> where T : BaseEntity
         _dbContext = dbContext;
     }
 
-    public async Task<ServiceResult<List<T>>> GetAsync() => await ExecuteSafelyAsync(async () => await _dbContext.Set<T>().ToListAsync());
-
-    public async Task<ServiceResult<T>> GetAsync(int id)
+    public async Task<ServiceResult<List<T>>> GetAsync(params Expression<Func<T, object>>[] includes)
     {
-        return await ExecuteSafelyAsync(async () => await GetByIdAsync(id) ?? throw new Exception("Query yielded no results"));
+        var query = _dbContext.Set<T>().AsQueryable();
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+        
+        return await ExecuteSafelyAsync(async () => await query.ToListAsync());
     }
+
+    public async Task<ServiceResult<T>> GetAsync(int id, params Expression<Func<T, object>>[] includes) =>
+        await ExecuteSafelyAsync(async () => await GetByIdAsync(id, includes) ?? throw new Exception("Query yielded no results"));
     
     public async Task<ServiceResult<CountResult>> InsertAsync(T entity)
     {
@@ -85,8 +94,18 @@ public abstract class BaseService<T> : IBaseService<T> where T : BaseEntity
             return new CountResult("Updated", updated);
         });
     }
-    
-    private async Task<T?> GetByIdAsync(int id) => await _dbContext.Set<T>().FirstOrDefaultAsync(e => e.Id == id);
+
+    private async Task<T?> GetByIdAsync(int id, params Expression<Func<T, object>>[] includes)
+    {
+        var query = _dbContext.Set<T>().AsQueryable();
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+        
+        return await query.FirstOrDefaultAsync(e => e.Id == id);
+    }
 
     // Allows a custom message rather than exception msg
     protected ValueTask<ServiceResult<TResult>> HandleServiceError<TResult>(string message) => new (new ServiceResult<TResult>(true, message));

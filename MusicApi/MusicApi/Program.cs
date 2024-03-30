@@ -22,6 +22,7 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 
 builder.Services.AddTransient<ArtistService>();
 builder.Services.AddTransient<SongService>();
+builder.Services.AddTransient<AlbumService>();
 
 var app = builder.Build();
 
