@@ -31,7 +31,6 @@ public class ArtistController : BaseController
     [HttpPost]
     public async Task<IActionResult> AddArtistAsync(string name)
     {
-        if (string.IsNullOrEmpty(name)) return BadRequest("Missing required field: name");
         var result = await _artistService.CreateAsync(name);
         return await HandleServiceResult(result);
     }

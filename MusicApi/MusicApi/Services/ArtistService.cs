@@ -17,6 +17,8 @@ public class ArtistService : BaseService<Artist>, IArtistService
 
     public async Task<ServiceResult<CountResult>> CreateAsync(string name)
     {
+        if (string.IsNullOrEmpty(name)) return await HandleServiceError<CountResult>("Missing required field: name");
+        
         var artist = new Artist { Name = name };
         return await InsertAsync(artist);
     }
