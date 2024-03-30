@@ -4,11 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using MusicApi.Data;
 using MusicApi.Services;
 
-var configuration = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-    .Build();
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -17,8 +12,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlite(configuration.GetValue<string>("DbConnection")));
+builder.Services.AddDbContext<DatabaseContext>();
 
 builder.Services.AddTransient<ArtistService>();
 builder.Services.AddTransient<SongService>();

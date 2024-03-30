@@ -88,6 +88,8 @@ public abstract class BaseService<T> : IBaseService<T> where T : BaseEntity
             if (entityToUpdate is not null)
             {
                 del(entityToUpdate);
+                entityToUpdate.LastModified = DateTime.UtcNow;
+                
                 updated = await _dbContext.SaveChangesAsync();
             }
 
